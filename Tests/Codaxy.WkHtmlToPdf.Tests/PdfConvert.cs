@@ -68,23 +68,39 @@ namespace Codaxy.WkHtmlToPdf
 
         private static string GetWkhtmlToPdfExeLocation()
         {
+            string exeLocationUnderBinFolder = @"wkhtmltopdf\bin\wkhtmltopdf.exe";
+            string exeLocationUnderRootFolder = @"wkhtmltopdf\wkhtmltopdf.exe"; 
+
             string programFilesPath = System.Environment.GetEnvironmentVariable("ProgramFiles");
-            string filePath = Path.Combine(programFilesPath, @"wkhtmltopdf\wkhtmltopdf.exe");
+            string filePath = Path.Combine(programFilesPath, exeLocationUnderBinFolder );
 
             if (File.Exists(filePath))
                 return filePath;
 
             string programFilesx86Path = System.Environment.GetEnvironmentVariable("ProgramFiles(x86)");
-            filePath = Path.Combine(programFilesx86Path, @"wkhtmltopdf\wkhtmltopdf.exe");
+            string filex86Path = Path.Combine(programFilesx86Path, exeLocationUnderRootFolder);
 
+            //case when both are returning the same path
+            if (programFilesx86Path == programFilesPath)
+            {
+                int x86Pos = programFilesx86Path.IndexOf(" (x86)");
+                if (x86Pos < 0) x86Pos = programFilesx86Path.IndexOf("(x86)");
+                if (x86Pos > -1)
+                {
+                    programFilesx86Path = programFilesx86Path.Substring(0, programFilesx86Path.Length - (programFilesx86Path.Length - x86Pos));
+                    filex86Path = Path.Combine(programFilesx86Path, exeLocationUnderBinFolder); 
+                }
+            }
+
+            if (File.Exists(filex86Path))
+                return filex86Path;
+
+
+            filePath = Path.Combine(programFilesPath, exeLocationUnderBinFolder);
             if (File.Exists(filePath))
                 return filePath;
 
-            filePath = Path.Combine(programFilesPath, @"wkhtmltopdf\bin\wkhtmltopdf.exe");
-            if (File.Exists(filePath))
-                return filePath;
-
-            return Path.Combine(programFilesx86Path, @"wkhtmltopdf\bin\wkhtmltopdf.exe");
+            return Path.Combine(programFilesx86Path, exeLocationUnderBinFolder);
         }
 
 		public static void ConvertHtmlToPdf(PdfDocument document, PdfOutput output)
